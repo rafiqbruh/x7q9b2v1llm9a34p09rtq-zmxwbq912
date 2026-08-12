@@ -10,6 +10,10 @@
     OneSignalDeferred.push(async function(OneSignal) {
       await OneSignal.init({
         appId: "88c2c53c-b6b6-4e49-97e9-12ad98a3aa0d",
+        safari_web_id: "web.onesignal.auto.2e77cfdc-f6e8-4572-82d4-363b6713f2bc",
+        notifyButton: {
+          enable: true,
+        },
         serviceWorkerParam: { scope: "/" },
         serviceWorkerPath: "OneSignalSDKWorker.js"
       });
@@ -472,15 +476,12 @@
       }
     });
 
-    // Sync notification state on initial load
     async function syncNotificationState() {
       if (window.gonative && window.gonative.onesignal) {
-        // Median.co Native Environment
         window.gonative.onesignal.user.getSubscription().then(sub => {
           notificationToggle.checked = !!sub.optedIn;
         }).catch(() => {});
       } else {
-        // Web / PWA Environment
         window.OneSignalDeferred = window.OneSignalDeferred || [];
         window.OneSignalDeferred.push(async function(OneSignal) {
           notificationToggle.checked = OneSignal.User.PushSubscription.optedIn;
@@ -488,12 +489,10 @@
       }
     }
 
-    // Dynamic Realtime Toggle Handler (Median Native Bridge + Web SDK Fallback)
     notificationToggle.addEventListener('change', async () => {
       const isEnabled = notificationToggle.checked;
 
       if (window.gonative && window.gonative.onesignal) {
-        // Native app bridge execution
         if (isEnabled) {
           window.gonative.onesignal.register();
           window.gonative.onesignal.user.setPushNotificationPermission(true);
@@ -501,7 +500,6 @@
           window.gonative.onesignal.user.setPushNotificationPermission(false);
         }
       } else {
-        // Web SDK execution
         window.OneSignalDeferred = window.OneSignalDeferred || [];
         window.OneSignalDeferred.push(async function(OneSignal) {
           if (isEnabled) {
@@ -518,4 +516,3 @@
 
 </body>
 </html>
-
