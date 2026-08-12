@@ -13,7 +13,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
   <script>
-    // Replace with your live Firebase configuration keys
+    // Live Firebase configuration keys
     const firebaseConfig = {
       apiKey: "AIzaSyBHJmbDOs1HT9g75OpaL0dMHIxbN7nAzUA",
       authDomain: "rafiqxworld.firebaseapp.com",
@@ -22,12 +22,17 @@
       storageBucket: "rafiqxworld.firebasestorage.app",
       messagingSenderId: "779080412415",
       appId: "1:779080412415:web:76b672e51ba65af988f0ca"
-    };
+     };
 
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
+    let db = null;
+    try {
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      db = firebase.database();
+    } catch (err) {
+      console.warn("Firebase initialized in local-fallback mode:", err);
     }
-    const db = firebase.database();
 
     // Initialize OneSignal Push Subscription Logic
     window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -101,7 +106,7 @@
       text-shadow: 0 0 12px rgba(0, 162, 255, 0.9), 0 0 24px rgba(0, 162, 255, 0.6);
     }
 
-    header {
+    header.app-header {
       width: 100%;
       max-width: 430px;
       padding: 12px 20px 8px;
@@ -115,7 +120,7 @@
       transition: border-color 0.3s, box-shadow 0.3s;
     }
 
-    body.day-mode header {
+    body.day-mode header.app-header {
       border-bottom-color: #0088ff;
       box-shadow: 0 4px 15px rgba(0, 136, 255, 0.25);
     }
@@ -216,7 +221,7 @@
       flex-shrink: 0;
     }
 
-    form {
+    form.settings-form {
       width: 100%;
       display: flex;
       flex-direction: column;
@@ -335,12 +340,201 @@
       align-self: flex-end;
     }
 
-    p#no-notifications-msg {
+    p#no-notifications-msg,
+    p#no-chat-msg {
       text-align: center;
-      padding: 40px 20px;
+      padding: 30px 20px;
       color: #4a6d91;
       font-size: 0.95rem;
       font-weight: 600;
+    }
+
+    /* WhatsApp-Style Real-Time Global Chat View */
+    section#chat-view {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 140px);
+      gap: 8px;
+    }
+
+    header#chat-profile-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 14px;
+      background-color: #060c14;
+      border: 2px solid #00a2ff;
+      border-radius: 14px;
+      box-shadow: 0 0 12px rgba(0, 162, 255, 0.3);
+      flex-shrink: 0;
+    }
+
+    body.day-mode header#chat-profile-bar {
+      background-color: #ffffff;
+      border-color: #0088ff;
+      box-shadow: 0 4px 12px rgba(0, 136, 255, 0.15);
+    }
+
+    label.pfp-label {
+      position: relative;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    img#chat-user-pfp-preview {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #00a2ff;
+      box-shadow: 0 0 8px rgba(0, 162, 255, 0.5);
+    }
+
+    input#chat-username-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    body.day-mode input#chat-username-input {
+      color: #0f233c;
+    }
+
+    ul#chat-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 4px;
+      overscroll-behavior-y: contain;
+    }
+
+    ul#chat-list li {
+      background-color: #060c14;
+      border: 1.5px solid #00a2ff;
+      border-radius: 14px;
+      padding: 10px 12px;
+      box-shadow: 0 0 10px rgba(0, 162, 255, 0.25);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    body.day-mode ul#chat-list li {
+      background-color: #ffffff;
+      border-color: #0088ff;
+      box-shadow: 0 2px 8px rgba(0, 136, 255, 0.12);
+    }
+
+    ul#chat-list li img.chat-msg-pfp {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1.5px solid #00a2ff;
+      flex-shrink: 0;
+    }
+
+    ul#chat-list li article.msg-body {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      aspect-ratio: auto;
+      box-shadow: none;
+      overflow: visible;
+    }
+
+    ul#chat-list li header.msg-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      width: 100%;
+    }
+
+    ul#chat-list li header.msg-header strong {
+      color: #ffffff;
+      font-size: 0.85rem;
+    }
+
+    body.day-mode ul#chat-list li header.msg-header strong {
+      color: #0f233c;
+    }
+
+    ul#chat-list li header.msg-header time {
+      font-size: 0.65rem;
+      color: #4a6d91;
+    }
+
+    ul#chat-list li p {
+      color: #00a2ff;
+      font-size: 0.88rem;
+      line-height: 1.35;
+      word-break: break-word;
+      user-select: text;
+    }
+
+    body.day-mode ul#chat-list li p {
+      color: #0f233c;
+    }
+
+    form#chat-form {
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    input#chat-input {
+      flex: 1;
+      background-color: #060c14;
+      border: 2px solid #00a2ff;
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: #00a2ff;
+      font-size: 0.9rem;
+      outline: none;
+      box-shadow: 0 0 10px rgba(0, 162, 255, 0.2);
+    }
+
+    body.day-mode input#chat-input {
+      background-color: #ffffff;
+      border-color: #0088ff;
+      color: #0f233c;
+      box-shadow: 0 2px 10px rgba(0, 136, 255, 0.1);
+    }
+
+    button#chat-send-btn {
+      background-color: #00a2ff;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      color: #040912;
+      font-weight: 800;
+      font-size: 0.9rem;
+      cursor: pointer;
+      box-shadow: 0 0 12px rgba(0, 162, 255, 0.5);
+    }
+
+    body.day-mode button#chat-send-btn {
+      background-color: #0088ff;
+      color: #ffffff;
     }
 
     nav {
@@ -369,10 +563,10 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
       color: #4a6d91;
       text-decoration: none;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 500;
       position: relative;
     }
@@ -409,8 +603,8 @@
 
     nav svg,
     nav img {
-      width: 22px;
-      height: 22px;
+      width: 20px;
+      height: 20px;
     }
 
     nav svg {
@@ -472,7 +666,7 @@
     <h2>RAFIQ<span>X</span>WORLD</h2>
   </aside>
 
-  <header>
+  <header class="app-header">
     <h1>RAFIQ<span>X</span>WORLD</h1>
   </header>
 
@@ -498,7 +692,7 @@
 
     <!-- Settings View -->
     <section id="settings-view" hidden>
-      <form onsubmit="return false;">
+      <form class="settings-form" onsubmit="return false;">
         <label class="setting-row">
           Apparance
           <input type="checkbox" id="theme-toggle">
@@ -523,6 +717,25 @@
       <ul id="notification-list"></ul>
       <p id="no-notifications-msg">No notifications yet</p>
     </section>
+
+    <!-- WhatsApp-Style Global Chat View -->
+    <section id="chat-view" hidden>
+      <header id="chat-profile-bar">
+        <label for="pfp-upload-input" class="pfp-label" title="Tap to change profile picture">
+          <img id="chat-user-pfp-preview" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzAwYTJmZiI+PHBhdGggZD0iTTEyIDJhNSA1IDAgMSAwIDUgNSA1IDUgMCAwIDAtNS01em0wIDEyYy01LjMzIDAtOCAyLjY3LTggNHYyaDE2di0yYzAtMS4zMy0yLjY3LTQtOC00eiIvPjwvc3ZnPg==" alt="User PFP">
+          <input type="file" id="pfp-upload-input" accept="image/*" hidden>
+        </label>
+        <input type="text" id="chat-username-input" placeholder="Set display name..." value="User" maxlength="20">
+      </header>
+
+      <ul id="chat-list"></ul>
+      <p id="no-chat-msg">No messages yet. Say hi!</p>
+
+      <form id="chat-form">
+        <input type="text" id="chat-input" placeholder="Type a message..." required autocomplete="off">
+        <button type="submit" id="chat-send-btn">Send</button>
+      </form>
+    </section>
   </main>
 
   <nav aria-label="Main Navigation">
@@ -538,6 +751,10 @@
       <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       Notification
     </a>
+    <a href="#chat">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Chat
+    </a>
     <a href="#about">
       <img src="http://googleusercontent.com/image_collection/image_retrieval/11067444597084047771_0" alt="About">
       About
@@ -549,8 +766,12 @@
     const homeView = document.getElementById('home-view');
     const settingsView = document.getElementById('settings-view');
     const notificationView = document.getElementById('notification-view');
+    const chatView = document.getElementById('chat-view');
     const themeToggle = document.getElementById('theme-toggle');
     const notificationToggle = document.getElementById('notification-toggle');
+
+    // Valid Base64 Data URI for default avatar
+    const defaultPfpSvg = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzAwYTJmZiI+PHBhdGggZD0iTTEyIDJhNSA1IDAgMSAwIDUgNSA1IDUgMCAwIDAtNS01em0wIDEyYy01LjMzIDAtOCAyLjY3LTggNHYyaDE2di0yYzAtMS4zMy0yLjY3LTQtOC00eiIvPjwvc3ZnPg==";
 
     setTimeout(() => {
       document.body.classList.remove('app-booting');
@@ -567,6 +788,7 @@
         homeView.hidden = target !== '#home';
         settingsView.hidden = target !== '#settings';
         notificationView.hidden = target !== '#notification';
+        chatView.hidden = target !== '#chat';
       });
     });
 
@@ -583,6 +805,8 @@
       const list = document.getElementById('notification-list');
       const emptyMsg = document.getElementById('no-notifications-msg');
 
+      if (!db) return;
+
       db.ref('notifications').on('value', (snapshot) => {
         list.innerHTML = '';
         const data = snapshot.val();
@@ -593,14 +817,163 @@
         }
 
         emptyMsg.hidden = true;
-        // Sort items by created_at timestamp descending (newest on top)
         const items = Object.values(data).sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
 
         items.forEach(item => {
           const li = document.createElement('li');
-          li.innerHTML = `<strong>${item.title || 'Notification'}</strong><p>${item.body || ''}</p><time>${item.timestamp || ''}</time>`;
+          const titleEl = document.createElement('strong');
+          titleEl.textContent = item.title || 'Notification';
+          const bodyEl = document.createElement('p');
+          bodyEl.textContent = item.body || '';
+          const timeEl = document.createElement('time');
+          timeEl.textContent = item.timestamp || '';
+
+          li.appendChild(titleEl);
+          li.appendChild(bodyEl);
+          li.appendChild(timeEl);
           list.appendChild(li);
         });
+      }, () => {
+        emptyMsg.hidden = false;
+      });
+    }
+
+    // Real-Time Global Chat Logic (WhatsApp Style)
+    function loadGlobalChat() {
+      const chatList = document.getElementById('chat-list');
+      const emptyMsg = document.getElementById('no-chat-msg');
+      const chatForm = document.getElementById('chat-form');
+      const chatInput = document.getElementById('chat-input');
+
+      const usernameInput = document.getElementById('chat-username-input');
+      const pfpPreview = document.getElementById('chat-user-pfp-preview');
+      const pfpFileInput = document.getElementById('pfp-upload-input');
+
+      // Local persistent profile setup
+      let currentUsername = localStorage.getItem('rafiqx_chat_username') || ('User_' + Math.floor(1000 + Math.random() * 9000));
+      let currentPfp = localStorage.getItem('rafiqx_chat_pfp') || defaultPfpSvg;
+
+      usernameInput.value = currentUsername;
+      pfpPreview.src = currentPfp;
+
+      // In-memory fallback feed if Firebase connection is unconfigured
+      const localMessages = [];
+
+      function renderMessageList(messages) {
+        chatList.innerHTML = '';
+        if (!messages || messages.length === 0) {
+          emptyMsg.hidden = false;
+          return;
+        }
+
+        emptyMsg.hidden = true;
+        messages.forEach(msg => {
+          const li = document.createElement('li');
+          
+          const img = document.createElement('img');
+          img.className = 'chat-msg-pfp';
+          img.src = msg.pfp || defaultPfpSvg;
+          img.alt = msg.user || 'User';
+
+          const article = document.createElement('article');
+          article.className = 'msg-body';
+
+          const header = document.createElement('header');
+          header.className = 'msg-header';
+
+          const nameEl = document.createElement('strong');
+          nameEl.textContent = msg.user || 'User';
+
+          const timeEl = document.createElement('time');
+          timeEl.textContent = msg.time || '';
+
+          header.appendChild(nameEl);
+          header.appendChild(timeEl);
+
+          const p = document.createElement('p');
+          p.textContent = msg.text || '';
+
+          article.appendChild(header);
+          article.appendChild(p);
+
+          li.appendChild(img);
+          li.appendChild(article);
+          chatList.appendChild(li);
+        });
+
+        chatList.scrollTop = chatList.scrollHeight;
+      }
+
+      usernameInput.addEventListener('change', () => {
+        const val = usernameInput.value.trim();
+        if (val) {
+          currentUsername = val;
+          localStorage.setItem('rafiqx_chat_username', currentUsername);
+        }
+      });
+
+      pfpFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 72;
+            canvas.height = 72;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, 72, 72);
+            currentPfp = canvas.toDataURL('image/jpeg', 0.8);
+            pfpPreview.src = currentPfp;
+            localStorage.setItem('rafiqx_chat_pfp', currentPfp);
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      // Firebase Live Listener with Offline/Error Fallback
+      if (db) {
+        db.ref('global_chat').limitToLast(60).on('value', (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            renderMessageList(Object.values(data));
+          } else {
+            renderMessageList([]);
+          }
+        }, (err) => {
+          console.warn("Firebase listener fallback activated:", err.message);
+          renderMessageList(localMessages);
+        });
+      }
+
+      chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const text = chatInput.value.trim();
+        if (!text) return;
+
+        const msgObj = {
+          user: usernameInput.value.trim() || currentUsername,
+          pfp: currentPfp,
+          text: text,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          created_at: Date.now()
+        };
+
+        if (db) {
+          db.ref('global_chat').push(msgObj).catch((err) => {
+            console.warn("Write error, queuing locally:", err.message);
+            localMessages.push(msgObj);
+            renderMessageList(localMessages);
+          });
+        } else {
+          localMessages.push(msgObj);
+          renderMessageList(localMessages);
+        }
+
+        chatInput.value = '';
       });
     }
 
@@ -642,6 +1015,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       syncNotificationState();
       loadNotificationsHistory();
+      loadGlobalChat();
     });
   </script>
 
