@@ -13,7 +13,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
   <script>
-    // Live Firebase configuration keys (Replace placeholders with actual credentials from Firebase Console)
     const firebaseConfig = {
       apiKey: "AIzaSyBHJmbDOs1HT9g75OpaL0dMHIxbN7nAzUA",
       authDomain: "rafiqxworld.firebaseapp.com",
@@ -38,15 +37,12 @@
       }
     }
 
-    // Initialize OneSignal Push Subscription Logic
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
       await OneSignal.init({
         appId: "88c2c53c-b6b6-4e49-97e9-12ad98a3aa0d",
         safari_web_id: "web.onesignal.auto.2e77cfdc-f6e8-4572-82d4-363b6713f2bc",
-        notifyButton: {
-          enable: true,
-        },
+        notifyButton: { enable: true },
         serviceWorkerParam: { scope: "/" },
         serviceWorkerPath: "OneSignalSDKWorker.js"
       });
@@ -60,6 +56,10 @@
       -webkit-tap-highlight-color: transparent;
       -webkit-touch-callout: none;
       user-select: none;
+    }
+
+    [hidden] {
+      display: none !important;
     }
 
     html, body {
@@ -167,10 +167,6 @@
       width: 100%;
     }
 
-    section[hidden] {
-      display: none !important;
-    }
-
     section#notification-view h2 {
       font-size: 1.1rem;
       font-weight: 700;
@@ -183,7 +179,7 @@
       color: #0f233c;
     }
 
-    article {
+    #home-view article {
       background-color: #060c14;
       border: 2px solid #00a2ff;
       border-radius: 16px;
@@ -194,22 +190,22 @@
       transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
     }
 
-    body.app-booting article {
+    body.app-booting #home-view article {
       opacity: 0;
       animation: slideInFade 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    body.app-booting article:nth-of-type(1) { animation-delay: 0.35s; }
-    body.app-booting article:nth-of-type(2) { animation-delay: 0.45s; }
-    body.app-booting article:nth-of-type(3) { animation-delay: 0.55s; }
+    body.app-booting #home-view article:nth-of-type(1) { animation-delay: 0.35s; }
+    body.app-booting #home-view article:nth-of-type(2) { animation-delay: 0.45s; }
+    body.app-booting #home-view article:nth-of-type(3) { animation-delay: 0.55s; }
 
-    body.day-mode article {
+    body.day-mode #home-view article {
       background-color: #ffffff;
       border-color: #0088ff;
       box-shadow: 0 4px 16px rgba(0, 136, 255, 0.2);
     }
 
-    article img {
+    #home-view article img {
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -292,7 +288,6 @@
       box-shadow: 0 0 8px #ffffff;
     }
 
-    /* Notification History Feed Styling */
     ul#notification-list {
       list-style: none;
       display: flex;
@@ -353,7 +348,6 @@
       font-weight: 600;
     }
 
-    /* WhatsApp-Style Real-Time Global Chat View */
     section#chat-view {
       display: flex;
       flex-direction: column;
@@ -449,26 +443,17 @@
       flex-shrink: 0;
     }
 
-    ul#chat-list li article.msg-body {
+    ul#chat-list li section.msg-body {
       display: flex;
       flex-direction: column;
       gap: 2px;
       flex: 1;
-      background: transparent;
-      border: none;
-      border-radius: 0;
-      aspect-ratio: auto;
-      box-shadow: none;
-      overflow: visible;
     }
 
     ul#chat-list li header.msg-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border: none;
-      box-shadow: none;
-      padding: 0;
       width: 100%;
     }
 
@@ -605,8 +590,7 @@
       box-shadow: 0 0 8px rgba(0, 136, 255, 0.5);
     }
 
-    nav svg,
-    nav img {
+    nav svg, nav img {
       width: 20px;
       height: 20px;
     }
@@ -653,14 +637,8 @@
     }
 
     @keyframes slideInFade {
-      0% {
-        opacity: 0;
-        transform: translateX(-40px);
-      }
-      100% {
-        opacity: 1;
-        transform: translateX(0);
-      }
+      0% { opacity: 0; transform: translateX(-40px); }
+      100% { opacity: 1; transform: translateX(0); }
     }
   </style>
 </head>
@@ -680,15 +658,11 @@
       <article>
         <img src="assets/RC20.png" alt="RC20">
       </article>
-
       <hr>
-
       <article>
         <img src="assets/RC24.png" alt="RC24">
       </article>
-
       <hr>
-
       <article>
         <img src="assets/ACCESSORIES.png" alt="ACCESSORIES">
       </article>
@@ -722,7 +696,7 @@
       <p id="no-notifications-msg">No notifications yet</p>
     </section>
 
-    <!-- WhatsApp-Style Global Chat View -->
+    <!-- Global Chat View -->
     <section id="chat-view" hidden>
       <header id="chat-profile-bar">
         <label for="pfp-upload-input" class="pfp-label" title="Tap to change profile picture">
@@ -803,7 +777,6 @@
       }
     });
 
-    // Fetch and render Notifications History from Firebase Realtime DB
     function loadNotificationsHistory() {
       const list = document.getElementById('notification-list');
       const emptyMsg = document.getElementById('no-notifications-msg');
@@ -841,7 +814,6 @@
       });
     }
 
-    // Real-Time Global Chat Logic (WhatsApp Style)
     function loadGlobalChat() {
       const chatList = document.getElementById('chat-list');
       const emptyMsg = document.getElementById('no-chat-msg');
@@ -852,14 +824,19 @@
       const pfpPreview = document.getElementById('chat-user-pfp-preview');
       const pfpFileInput = document.getElementById('pfp-upload-input');
 
-      // Local persistent profile setup
       let currentUsername = localStorage.getItem('rafiqx_chat_username') || ('User_' + Math.floor(1000 + Math.random() * 9000));
       let currentPfp = localStorage.getItem('rafiqx_chat_pfp') || defaultPfpSvg;
 
       usernameInput.value = currentUsername;
       pfpPreview.src = currentPfp;
 
-      let chatStore = JSON.parse(localStorage.getItem('rafiqx_chat_store') || '[]');
+      let chatStore = [];
+      try {
+        chatStore = JSON.parse(localStorage.getItem('rafiqx_chat_store') || '[]');
+        if (!Array.isArray(chatStore)) chatStore = [];
+      } catch (e) {
+        chatStore = [];
+      }
 
       function renderMessageList(messages) {
         chatList.innerHTML = '';
@@ -877,8 +854,8 @@
           img.src = msg.pfp || defaultPfpSvg;
           img.alt = msg.user || 'User';
 
-          const article = document.createElement('article');
-          article.className = 'msg-body';
+          const msgBody = document.createElement('section');
+          msgBody.className = 'msg-body';
 
           const header = document.createElement('header');
           header.className = 'msg-header';
@@ -895,18 +872,17 @@
           const p = document.createElement('p');
           p.textContent = msg.text || '';
 
-          article.appendChild(header);
-          article.appendChild(p);
+          msgBody.appendChild(header);
+          msgBody.appendChild(p);
 
           li.appendChild(img);
-          li.appendChild(article);
+          li.appendChild(msgBody);
           chatList.appendChild(li);
         });
 
         chatList.scrollTop = chatList.scrollHeight;
       }
 
-      // Initial render from local persistence
       renderMessageList(chatStore);
 
       usernameInput.addEventListener('change', () => {
@@ -939,7 +915,6 @@
         reader.readAsDataURL(file);
       });
 
-      // Firebase Sync Handler
       if (db) {
         db.ref('global_chat').limitToLast(60).on('value', (snapshot) => {
           const data = snapshot.val();
@@ -966,13 +941,11 @@
           created_at: Date.now()
         };
 
-        // Render immediately in local state
         chatStore.push(msgObj);
         if (chatStore.length > 60) chatStore.shift();
         localStorage.setItem('rafiqx_chat_store', JSON.stringify(chatStore));
         renderMessageList(chatStore);
 
-        // Sync upstream to Firebase if configured
         if (db) {
           db.ref('global_chat').push(msgObj).catch((err) => {
             console.warn("Database push failed:", err.message);
