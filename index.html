@@ -1,1 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>RAFIQXWORLD - Smart Home UI</title>
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "YOUR_ONESIGNAL_APP_ID",
+        serviceWorkerParam: { scope: "/" },
+        serviceWorkerPath: "OneSignalSDKWorker.js"
+      });
+    });
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      user-select: none;
+    }
+
+    html, body {
+      height: 100vh;
+      overflow: hidden;
+      overscroll-behavior: none;
+      touch-action: manipulation;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 30%, #0c1c2e 0%, #03070d 100%);
+      color: #00a2ff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    body.day-mode {
+      background: radial-gradient(circle at 50% 30%, #eef6ff 0%, #cce3f8 100%);
+      color: #0066cc;
+    }
+
+    aside#splash {
+      position: fixed;
+      inset: 0;
+      background: #03070d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      animation: dismissSplash 0.35s cubic-bezier(0.4, 0, 0.2, 1) 0.35s forwards;
+      pointer-events: none;
+    }
+
+    aside#splash h2 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #ffffff;
+      text-shadow: none;
+      animation: pulseLogo 0.35s ease-in-out infinite alternate;
+    }
+
+    aside#splash h2 span {
+      color: #00a2ff;
+      text-shadow: 0 0 12px rgba(0, 162, 255, 0.9), 0 0 24px rgba(0, 162, 255, 0.6);
+    }
+
+    header {
+      width: 100%;
+      max-width: 430px;
+      padding: 12px 20px 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      border-bottom: 2px solid #00a2ff;
+      box-shadow: 0 4px 15px rgba(0, 162, 255, 0.4);
+      flex-shrink: 0;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    body.day-mode header {
+      border-bottom-color: #0088ff;
+      box-shadow: 0 4px 15px rgba(0, 136, 255, 0.25);
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #ffffff;
+      text-shadow: none;
+      transition: color 0.3s;
+    }
+
+    body.day-mode h1 {
+      color: #0f233c;
+    }
+
+    h1 span {
+      color: #00a2ff;
+      text-shadow: 0 0 10px rgba(0, 162, 255, 0.9), 0 0 20px rgba(0, 162, 255, 0.6);
+    }
+
+    main {
+      width: 100%;
+      max-width: 430px;
+      padding: 12px 16px 75px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+      overflow-y: auto;
+      overscroll-behavior-y: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    section[hidden] {
+      display: none !important;
+    }
+
+    article {
+      background-color: #060c14;
+      border: 2px solid #00a2ff;
+      border-radius: 16px;
+      aspect-ratio: 1080 / 720;
+      box-shadow: 0 0 16px rgba(0, 162, 255, 0.4), inset 0 0 12px rgba(0, 162, 255, 0.2);
+      flex-shrink: 0;
+      overflow: hidden;
+      transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+    }
+
+    body.app-booting article {
+      opacity: 0;
+      animation: slideInFade 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    body.app-booting article:nth-of-type(1) { animation-delay: 0.35s; }
+    body.app-booting article:nth-of-type(2) { animation-delay: 0.45s; }
+    body.app-booting article:nth-of-type(3) { animation-delay: 0.55s; }
+
+    body.day-mode article {
+      background-color: #ffffff;
+      border-color: #0088ff;
+      box-shadow: 0 4px 16px rgba(0, 136, 255, 0.2);
+    }
+
+    article img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    hr {
+      border: none;
+      height: 3px;
+      background-color: #00a2ff;
+      box-shadow: 0 0 10px #00a2ff;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    label.setting-row {
+      background-color: #060c14;
+      border: 2px solid #00a2ff;
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 0 16px rgba(0, 162, 255, 0.4);
+      color: #00a2ff;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s, color 0.3s;
+    }
+
+    body.day-mode label.setting-row {
+      background-color: #ffffff;
+      border-color: #0088ff;
+      color: #0f233c;
+      box-shadow: 0 4px 16px rgba(0, 136, 255, 0.2);
+    }
+
+    label.setting-row input[type="checkbox"] {
+      display: none;
+    }
+
+    span.toggle-track {
+      position: relative;
+      width: 52px;
+      height: 28px;
+      background-color: #091524;
+      border: 2px solid #00a2ff;
+      border-radius: 20px;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    span.toggle-thumb {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background-color: #00a2ff;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #00a2ff;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s;
+    }
+
+    label.setting-row input[type="checkbox"]:checked + span.toggle-track {
+      background-color: #00a2ff;
+      border-color: #00a2ff;
+    }
+
+    label.setting-row input[type="checkbox"]:checked + span.toggle-track span.toggle-thumb {
+      transform: translateX(24px);
+      background-color: #ffffff;
+      box-shadow: 0 0 8px #ffffff;
+    }
+
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 430px;
+      background: #040912;
+      border-top: 1px solid #0f243f;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0 14px;
+      z-index: 100;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    body.day-mode nav {
+      background: #ffffff;
+      border-top-color: #c0d8f0;
+      box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    nav a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      color: #4a6d91;
+      text-decoration: none;
+      font-size: 0.75rem;
+      font-weight: 500;
+      position: relative;
+    }
+
+    body.day-mode nav a {
+      color: #5c7899;
+    }
+
+    nav a.active {
+      color: #00a2ff;
+      text-shadow: 0 0 8px rgba(0, 162, 255, 0.9);
+    }
+
+    body.day-mode nav a.active {
+      color: #0088ff;
+      text-shadow: none;
+    }
+
+    nav a.active::before {
+      content: "";
+      position: absolute;
+      top: -11px;
+      width: 100%;
+      height: 3px;
+      background-color: #00a2ff;
+      box-shadow: 0 0 10px #00a2ff;
+      border-radius: 2px;
+    }
+
+    body.day-mode nav a.active::before {
+      background-color: #0088ff;
+      box-shadow: 0 0 8px rgba(0, 136, 255, 0.5);
+    }
+
+    nav svg,
+    nav img {
+      width: 22px;
+      height: 22px;
+    }
+
+    nav svg {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    nav a.active svg {
+      fill: #00a2ff;
+      stroke: #00a2ff;
+      filter: drop-shadow(0 0 8px #00a2ff);
+    }
+
+    body.day-mode nav a.active svg {
+      fill: #0088ff;
+      stroke: #0088ff;
+      filter: drop-shadow(0 0 4px rgba(0, 136, 255, 0.4));
+    }
+
+    nav a[href="#about"] img {
+      object-fit: contain;
+      background: rgba(0, 162, 255, 0.18);
+      border-radius: 50%;
+      padding: 2px;
+      box-shadow: 0 0 8px rgba(0, 162, 255, 0.3);
+      filter: drop-shadow(0 0 4px rgba(0, 162, 255, 0.6));
+    }
+
+    @keyframes dismissSplash {
+      to {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+
+    @keyframes pulseLogo {
+      from { transform: scale(0.98); opacity: 0.8; }
+      to { transform: scale(1.02); opacity: 1; }
+    }
+
+    @keyframes slideInFade {
+      0% {
+        opacity: 0;
+        transform: translateX(-40px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  </style>
+</head>
+<body class="app-booting">
+
+  <aside id="splash" aria-hidden="true">
+    <h2>RAFIQ<span>X</span>WORLD</h2>
+  </aside>
+
+  <header>
+    <h1>RAFIQ<span>X</span>WORLD</h1>
+  </header>
+
+  <main>
+    <section id="home-view">
+      <article>
+        <img src="assets/RC20.png" alt="RC20">
+      </article>
+
+      <hr>
+
+      <article>
+        <img src="assets/RC24.png" alt="RC24">
+      </article>
+
+      <hr>
+
+      <article>
+        <img src="assets/ACCESSORIES.png" alt="ACCESSORIES">
+      </article>
+    </section>
+
+    <section id="settings-view" hidden>
+      <form onsubmit="return false;">
+        <label class="setting-row">
+          Apparance
+          <input type="checkbox" id="theme-toggle">
+          <span class="toggle-track">
+            <span class="toggle-thumb"></span>
+          </span>
+        </label>
+
+        <label class="setting-row">
+          Notifications
+          <input type="checkbox" id="notification-toggle">
+          <span class="toggle-track">
+            <span class="toggle-thumb"></span>
+          </span>
+        </label>
+      </form>
+    </section>
+  </main>
+
+  <nav aria-label="Main Navigation">
+    <a href="#home" class="active">
+      <svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      Home
+    </a>
+    <a href="#settings">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </a>
+    <a href="#notification">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      Notification
+    </a>
+    <a href="#about">
+      <img src="http://googleusercontent.com/image_collection/image_retrieval/11067444597084047771_0" alt="About">
+      About
+    </a>
+  </nav>
+
+  <script>
+    const navLinks = document.querySelectorAll('nav a');
+    const homeView = document.getElementById('home-view');
+    const settingsView = document.getElementById('settings-view');
+    const themeToggle = document.getElementById('theme-toggle');
+    const notificationToggle = document.getElementById('notification-toggle');
+
+    setTimeout(() => {
+      document.body.classList.remove('app-booting');
+    }, 1000);
+
+    navLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = link.getAttribute('href');
+
+        navLinks.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+
+        if (target === '#settings') {
+          homeView.hidden = true;
+          settingsView.hidden = false;
+        } else if (target === '#home') {
+          homeView.hidden = false;
+          settingsView.hidden = true;
+        }
+      });
+    });
+
+    themeToggle.addEventListener('change', () => {
+      if (themeToggle.checked) {
+        document.body.classList.add('day-mode');
+      } else {
+        document.body.classList.remove('day-mode');
+      }
+    });
+
+    // Sync notification state on initial load
+    async function syncNotificationState() {
+      if (window.gonative && window.gonative.onesignal) {
+        // Median.co Native Environment
+        window.gonative.onesignal.user.getSubscription().then(sub => {
+          notificationToggle.checked = !!sub.optedIn;
+        }).catch(() => {});
+      } else {
+        // Web / PWA Environment
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        window.OneSignalDeferred.push(async function(OneSignal) {
+          notificationToggle.checked = OneSignal.User.PushSubscription.optedIn;
+        });
+      }
+    }
+
+    // Dynamic Realtime Toggle Handler (Median Native Bridge + Web SDK Fallback)
+    notificationToggle.addEventListener('change', async () => {
+      const isEnabled = notificationToggle.checked;
+
+      if (window.gonative && window.gonative.onesignal) {
+        // Native app bridge execution
+        if (isEnabled) {
+          window.gonative.onesignal.register();
+          window.gonative.onesignal.user.setPushNotificationPermission(true);
+        } else {
+          window.gonative.onesignal.user.setPushNotificationPermission(false);
+        }
+      } else {
+        // Web SDK execution
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        window.OneSignalDeferred.push(async function(OneSignal) {
+          if (isEnabled) {
+            await OneSignal.User.PushSubscription.optIn();
+          } else {
+            await OneSignal.User.PushSubscription.optOut();
+          }
+        });
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', syncNotificationState);
+  </script>
+
+</body>
+</html>
 
