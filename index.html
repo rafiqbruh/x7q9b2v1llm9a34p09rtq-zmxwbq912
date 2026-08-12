@@ -17,6 +17,16 @@
         serviceWorkerParam: { scope: "/" },
         serviceWorkerPath: "OneSignalSDKWorker.js"
       });
+
+      // Intercept incoming notifications in foreground and store locally
+      OneSignal.Notifications.addEventListener("foregroundWillDisplay", function(event) {
+        const notif = event.notification;
+        saveNotification({
+          title: notif.title || "Notification",
+          body: notif.body || "",
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        });
+      });
     });
   </script>
   <style>
@@ -247,6 +257,66 @@
       box-shadow: 0 0 8px #ffffff;
     }
 
+    /* Notification Feed UI Styling */
+    ul#notification-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    ul#notification-list li {
+      background-color: #060c14;
+      border: 2px solid #00a2ff;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 0 16px rgba(0, 162, 255, 0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+    }
+
+    body.day-mode ul#notification-list li {
+      background-color: #ffffff;
+      border-color: #0088ff;
+      box-shadow: 0 4px 16px rgba(0, 136, 255, 0.2);
+    }
+
+    ul#notification-list li strong {
+      color: #ffffff;
+      font-size: 1rem;
+    }
+
+    body.day-mode ul#notification-list li strong {
+      color: #0f233c;
+    }
+
+    ul#notification-list li p {
+      color: #00a2ff;
+      font-size: 0.875rem;
+      line-height: 1.4;
+    }
+
+    body.day-mode ul#notification-list li p {
+      color: #5c7899;
+    }
+
+    ul#notification-list li time {
+      font-size: 0.7rem;
+      color: #4a6d91;
+      align-self: flex-end;
+    }
+
+    p#no-notifications-msg {
+      text-align: center;
+      padding: 40px 20px;
+      color: #4a6d91;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
     nav {
       position: fixed;
       bottom: 0;
@@ -381,6 +451,7 @@
   </header>
 
   <main>
+    <!-- Home View -->
     <section id="home-view">
       <article>
         <img src="assets/RC20.png" alt="RC20">
@@ -399,6 +470,7 @@
       </article>
     </section>
 
+    <!-- Settings View -->
     <section id="settings-view" hidden>
       <form onsubmit="return false;">
         <label class="setting-row">
@@ -417,6 +489,12 @@
           </span>
         </label>
       </form>
+    </section>
+
+    <!-- Notification Feed View -->
+    <section id="notification-view" hidden>
+      <ul id="notification-list"></ul>
+      <p id="no-notifications-msg">No notifications yet</p>
     </section>
   </main>
 
@@ -443,6 +521,7 @@
     const navLinks = document.querySelectorAll('nav a');
     const homeView = document.getElementById('home-view');
     const settingsView = document.getElementById('settings-view');
+    const notificationView = document.getElementById('notification-view');
     const themeToggle = document.getElementById('theme-toggle');
     const notificationToggle = document.getElementById('notification-toggle');
 
@@ -458,13 +537,9 @@
         navLinks.forEach(l => l.classList.remove('active'));
         link.classList.add('active');
 
-        if (target === '#settings') {
-          homeView.hidden = true;
-          settingsView.hidden = false;
-        } else if (target === '#home') {
-          homeView.hidden = false;
-          settingsView.hidden = true;
-        }
+        homeView.hidden = target !== '#home';
+        settingsView.hidden = target !== '#settings';
+        notificationView.hidden = target !== '#notification';
       });
     });
 
@@ -475,6 +550,33 @@
         document.body.classList.remove('day-mode');
       }
     });
+
+    // Load and render stored notifications
+    function loadNotifications() {
+      const list = document.getElementById('notification-list');
+      const emptyMsg = document.getElementById('no-notifications-msg');
+      const stored = JSON.parse(localStorage.getItem('app_notifications') || '[]');
+
+      list.innerHTML = '';
+      if (stored.length === 0) {
+        emptyMsg.hidden = false;
+      } else {
+        emptyMsg.hidden = true;
+        stored.forEach(item => {
+          const li = document.createElement('li');
+          li.innerHTML = `<strong>${item.title}</strong><p>${item.body}</p><time>${item.timestamp}</time>`;
+          list.appendChild(li);
+        });
+      }
+    }
+
+    // Persist new notification entry
+    function saveNotification(notif) {
+      const stored = JSON.parse(localStorage.getItem('app_notifications') || '[]');
+      stored.unshift(notif);
+      localStorage.setItem('app_notifications', JSON.stringify(stored));
+      loadNotifications();
+    }
 
     async function syncNotificationState() {
       if (window.gonative && window.gonative.onesignal) {
@@ -511,7 +613,25 @@
       }
     });
 
-    document.addEventListener('DOMContentLoaded', syncNotificationState);
+    document.addEventListener('DOMContentLoaded', () => {
+      syncNotificationState();
+
+      // Parse Launch URL parameters for notifications clicked when the app was closed
+      const urlParams = new URLSearchParams(window.location.search);
+      const notifTitle = urlParams.get('notif_title');
+      const notifBody = urlParams.get('notif_body');
+
+      if (notifTitle) {
+        saveNotification({
+          title: notifTitle,
+          body: notifBody || '',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        });
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
+      loadNotifications();
+    });
   </script>
 
 </body>
