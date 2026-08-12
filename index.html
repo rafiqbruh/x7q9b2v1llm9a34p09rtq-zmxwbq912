@@ -13,7 +13,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
   <script>
-    // Live Firebase configuration keys
+    // Live Firebase configuration keys (Replace placeholders with actual credentials from Firebase Console)
     const firebaseConfig = {
       apiKey: "AIzaSyBHJmbDOs1HT9g75OpaL0dMHIxbN7nAzUA",
       authDomain: "rafiqxworld.firebaseapp.com",
@@ -22,16 +22,20 @@
       storageBucket: "rafiqxworld.firebasestorage.app",
       messagingSenderId: "779080412415",
       appId: "1:779080412415:web:76b672e51ba65af988f0ca"
-     };
+    };
 
     let db = null;
-    try {
-      if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
+    const isFirebaseConfigured = firebaseConfig.apiKey !== "YOUR_FIREBASE_API_KEY";
+
+    if (isFirebaseConfigured) {
+      try {
+        if (!firebase.apps.length) {
+          firebase.initializeApp(firebaseConfig);
+        }
+        db = firebase.database();
+      } catch (err) {
+        console.warn("Firebase failed to initialize:", err);
       }
-      db = firebase.database();
-    } catch (err) {
-      console.warn("Firebase initialized in local-fallback mode:", err);
     }
 
     // Initialize OneSignal Push Subscription Logic
@@ -770,7 +774,6 @@
     const themeToggle = document.getElementById('theme-toggle');
     const notificationToggle = document.getElementById('notification-toggle');
 
-    // Valid Base64 Data URI for default avatar
     const defaultPfpSvg = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzAwYTJmZiI+PHBhdGggZD0iTTEyIDJhNSA1IDAgMSAwIDUgNSA1IDUgMCAwIDAtNS01em0wIDEyYy01LjMzIDAtOCAyLjY3LTggNHYyaDE2di0yYzAtMS4zMy0yLjY3LTQtOC00eiIvPjwvc3ZnPg==";
 
     setTimeout(() => {
@@ -856,8 +859,7 @@
       usernameInput.value = currentUsername;
       pfpPreview.src = currentPfp;
 
-      // In-memory fallback feed if Firebase connection is unconfigured
-      const localMessages = [];
+      let chatStore = JSON.parse(localStorage.getItem('rafiqx_chat_store') || '[]');
 
       function renderMessageList(messages) {
         chatList.innerHTML = '';
@@ -904,6 +906,9 @@
         chatList.scrollTop = chatList.scrollHeight;
       }
 
+      // Initial render from local persistence
+      renderMessageList(chatStore);
+
       usernameInput.addEventListener('change', () => {
         const val = usernameInput.value.trim();
         if (val) {
@@ -934,18 +939,17 @@
         reader.readAsDataURL(file);
       });
 
-      // Firebase Live Listener with Offline/Error Fallback
+      // Firebase Sync Handler
       if (db) {
         db.ref('global_chat').limitToLast(60).on('value', (snapshot) => {
           const data = snapshot.val();
           if (data) {
-            renderMessageList(Object.values(data));
-          } else {
-            renderMessageList([]);
+            chatStore = Object.values(data);
+            localStorage.setItem('rafiqx_chat_store', JSON.stringify(chatStore));
+            renderMessageList(chatStore);
           }
         }, (err) => {
-          console.warn("Firebase listener fallback activated:", err.message);
-          renderMessageList(localMessages);
+          console.warn("Firebase listener rejected access:", err.message);
         });
       }
 
@@ -962,15 +966,17 @@
           created_at: Date.now()
         };
 
+        // Render immediately in local state
+        chatStore.push(msgObj);
+        if (chatStore.length > 60) chatStore.shift();
+        localStorage.setItem('rafiqx_chat_store', JSON.stringify(chatStore));
+        renderMessageList(chatStore);
+
+        // Sync upstream to Firebase if configured
         if (db) {
           db.ref('global_chat').push(msgObj).catch((err) => {
-            console.warn("Write error, queuing locally:", err.message);
-            localMessages.push(msgObj);
-            renderMessageList(localMessages);
+            console.warn("Database push failed:", err.message);
           });
-        } else {
-          localMessages.push(msgObj);
-          renderMessageList(localMessages);
         }
 
         chatInput.value = '';
