@@ -8,28 +8,28 @@
   <!-- OneSignal SDK -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   
-  <!-- Firebase SDKs (Compat Version for CDN usage) -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
   <script>
-    // Initialize Firebase
+    // Replace with your live Firebase configuration keys
     const firebaseConfig = {
-  apiKey: "AIzaSyBHJmbDOs1HT9g75OpaL0dMHIxbN7nAzUA",
-  authDomain: "rafiqxworld.firebaseapp.com",
-  databaseURL: "https://rafiqxworld-default-rtdb.firebaseio.com",
-  projectId: "rafiqxworld",
-  storageBucket: "rafiqxworld.firebasestorage.app",
-  messagingSenderId: "779080412415",
-  appId: "1:779080412415:web:76b672e51ba65af988f0ca"
-};
-    
+      apiKey: "AIzaSyBHJmbDOs1HT9g75OpaL0dMHIxbN7nAzUA",
+      authDomain: "rafiqxworld.firebaseapp.com",
+      databaseURL: "https://rafiqxworld-default-rtdb.firebaseio.com",
+      projectId: "rafiqxworld",
+      storageBucket: "rafiqxworld.firebasestorage.app",
+      messagingSenderId: "779080412415",
+      appId: "1:779080412415:web:76b672e51ba65af988f0ca"
+    };
+
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
     const db = firebase.database();
 
-    // Initialize OneSignal
+    // Initialize OneSignal Push Subscription Logic
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
       await OneSignal.init({
@@ -40,17 +40,6 @@
         },
         serviceWorkerParam: { scope: "/" },
         serviceWorkerPath: "OneSignalSDKWorker.js"
-      });
-
-      // Intercept incoming notifications in foreground and write to Firebase
-      OneSignal.Notifications.addEventListener("foregroundWillDisplay", function(event) {
-        const notif = event.notification;
-        saveNotificationToFirebase({
-          title: notif.title || "Notification",
-          body: notif.body || "",
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          created_at: Date.now()
-        });
       });
     });
   </script>
@@ -173,6 +162,18 @@
       display: none !important;
     }
 
+    section#notification-view h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+
+    body.day-mode section#notification-view h2 {
+      color: #0f233c;
+    }
+
     article {
       background-color: #060c14;
       border: 2px solid #00a2ff;
@@ -282,7 +283,7 @@
       box-shadow: 0 0 8px #ffffff;
     }
 
-    /* Notification Feed UI Styling */
+    /* Notification History Feed Styling */
     ul#notification-list {
       list-style: none;
       display: flex;
@@ -516,8 +517,9 @@
       </form>
     </section>
 
-    <!-- Notification Feed View -->
+    <!-- Notifications History View -->
     <section id="notification-view" hidden>
+      <h2>Notifications History</h2>
       <ul id="notification-list"></ul>
       <p id="no-notifications-msg">No notifications yet</p>
     </section>
@@ -576,8 +578,8 @@
       }
     });
 
-    // Realtime Firebase Listener
-    function listenToNotifications() {
+    // Fetch and render Notifications History from Firebase Realtime DB
+    function loadNotificationsHistory() {
       const list = document.getElementById('notification-list');
       const emptyMsg = document.getElementById('no-notifications-msg');
 
@@ -591,20 +593,15 @@
         }
 
         emptyMsg.hidden = true;
-        // Sort items so latest notification is on top
+        // Sort items by created_at timestamp descending (newest on top)
         const items = Object.values(data).sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
 
         items.forEach(item => {
           const li = document.createElement('li');
-          li.innerHTML = `<strong>${item.title}</strong><p>${item.body}</p><time>${item.timestamp}</time>`;
+          li.innerHTML = `<strong>${item.title || 'Notification'}</strong><p>${item.body || ''}</p><time>${item.timestamp || ''}</time>`;
           list.appendChild(li);
         });
       });
-    }
-
-    // Write to Firebase Realtime DB
-    function saveNotificationToFirebase(notif) {
-      db.ref('notifications').push(notif);
     }
 
     async function syncNotificationState() {
@@ -644,7 +641,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       syncNotificationState();
-      listenToNotifications();
+      loadNotificationsHistory();
     });
   </script>
 
