@@ -358,6 +358,173 @@
       gap: 8px;
     }
 
+    section#chat-auth-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background-color: #060c14;
+      border: 2px solid #00a2ff;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 0 16px rgba(0, 162, 255, 0.4);
+      margin: auto 0;
+    }
+
+    body.day-mode section#chat-auth-section {
+      background-color: #ffffff;
+      border-color: #0088ff;
+      box-shadow: 0 4px 16px rgba(0, 136, 255, 0.2);
+    }
+
+    section#chat-auth-section h2 {
+      font-size: 1.2rem;
+      color: #ffffff;
+      text-align: center;
+    }
+
+    body.day-mode section#chat-auth-section h2 {
+      color: #0f233c;
+    }
+
+    form#auth-credentials-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    label.auth-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #00a2ff;
+    }
+
+    body.day-mode label.auth-field {
+      color: #0f233c;
+    }
+
+    label.auth-field input {
+      background: #040912;
+      border: 1.5px solid #00a2ff;
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #ffffff;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    body.day-mode label.auth-field input {
+      background: #f0f7ff;
+      border-color: #0088ff;
+      color: #0f233c;
+    }
+
+    menu.auth-buttons,
+    menu#verification-actions {
+      display: flex;
+      gap: 10px;
+      padding: 0;
+    }
+
+    menu#verification-actions {
+      flex-direction: column;
+    }
+
+    menu.auth-buttons button,
+    menu#verification-actions button {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+    }
+
+    button#email-signin-btn,
+    button#check-verification-btn {
+      background: #00a2ff;
+      color: #040912;
+    }
+
+    body.day-mode button#email-signin-btn,
+    body.day-mode button#check-verification-btn {
+      background: #0088ff;
+      color: #ffffff;
+    }
+
+    button#email-signup-btn,
+    button#resend-email-btn {
+      background: transparent;
+      border: 1.5px solid #00a2ff;
+      color: #00a2ff;
+    }
+
+    body.day-mode button#email-signup-btn,
+    body.day-mode button#resend-email-btn {
+      border-color: #0088ff;
+      color: #0088ff;
+    }
+
+    button#google-signin-btn {
+      background: #ffffff;
+      color: #000000;
+      border: 1.5px solid #cccccc;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    button#auth-signout-btn,
+    button#modal-signout-btn {
+      background: rgba(255, 77, 77, 0.15);
+      color: #ff4d4d;
+      border: 1.5px solid #ff4d4d;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    body.day-mode button#auth-signout-btn,
+    body.day-mode button#modal-signout-btn {
+      background: rgba(211, 47, 47, 0.1);
+      color: #d32f2f;
+      border-color: #d32f2f;
+    }
+
+    output#auth-status-msg {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-align: center;
+      display: block;
+      min-height: 1.2rem;
+      word-break: break-word;
+    }
+
+    output#auth-status-msg.error {
+      color: #ff4d4d;
+    }
+
+    output#auth-status-msg.success {
+      color: #00e676;
+    }
+
+    body.day-mode output#auth-status-msg.error {
+      color: #d32f2f;
+    }
+
+    body.day-mode output#auth-status-msg.success {
+      color: #2e7d32;
+    }
+
     header#chat-profile-bar {
       display: flex;
       align-items: center;
@@ -535,6 +702,7 @@
       justify-content: flex-end;
       gap: 10px;
       margin-top: 8px;
+      padding: 0;
     }
 
     menu.modal-actions button {
@@ -1007,7 +1175,43 @@
     </section>
 
     <section id="chat-view" hidden>
-      <header id="chat-profile-bar">
+      <section id="chat-auth-section">
+        <h2>Chat Authentication</h2>
+
+        <form id="auth-credentials-form" onsubmit="return false;">
+          <label class="auth-field">
+            Email Address
+            <input type="email" id="auth-email-input" placeholder="name@example.com" autocomplete="email">
+          </label>
+
+          <label class="auth-field">
+            Password
+            <input type="password" id="auth-password-input" placeholder="••••••••" autocomplete="current-password">
+          </label>
+
+          <output id="auth-status-msg" aria-live="polite"></output>
+
+          <menu class="auth-buttons" id="auth-main-actions">
+            <button type="button" id="email-signin-btn">Sign In</button>
+            <button type="button" id="email-signup-btn">Sign Up</button>
+          </menu>
+        </form>
+
+        <hr id="auth-divider">
+
+        <button type="button" id="google-signin-btn">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.1 0-5.74-2.09-6.68-4.92H1.33v3.13C3.32 21.32 7.38 24 12 24z"/><path fill="#FBBC05" d="M5.32 14.28c-.24-.72-.38-1.49-.38-2.28s.14-1.56.38-2.28V6.59H1.33C.48 8.28 0 10.08 0 12s.48 3.72 1.33 5.41l3.99-3.13z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.38 0 3.32 2.68 1.33 6.59l3.99 3.13c.94-2.83 3.58-4.97 6.68-4.97z"/></svg>
+          Sign in with Google
+        </button>
+
+        <menu id="verification-actions" hidden>
+          <button type="button" id="resend-email-btn">Resend Verification Email</button>
+          <button type="button" id="check-verification-btn">Check Verification Status</button>
+          <button type="button" id="auth-signout-btn">Sign Out</button>
+        </menu>
+      </section>
+
+      <header id="chat-profile-bar" hidden>
         <img id="chat-user-pfp-preview" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzAwYTJmZiI+PHBhdGggZD0iTTEyIDJhNSA1IDAgMSAwIDUgNSA1IDUgMCAwIDAtNS01em0wIDEyYy01LjMzIDAtOCAyLjY3LTggNHYyaDE2di0yYzAtMS4zMy0yLjY3LTQtOC00eiIvPjwvc3ZnPg==" alt="User PFP">
         <strong id="chat-username-display">@user</strong>
         <button type="button" id="open-profile-modal-btn" aria-label="Edit Profile">
@@ -1016,8 +1220,8 @@
         </button>
       </header>
 
-      <ul id="chat-list"></ul>
-      <p id="no-chat-msg">No messages yet. Say hi!</p>
+      <ul id="chat-list" hidden></ul>
+      <p id="no-chat-msg" hidden>No messages yet. Say hi!</p>
 
       <aside id="chat-reply-banner" hidden>
         <img id="reply-banner-pfp" class="chat-msg-pfp" src="" alt="Reply PFP">
@@ -1028,7 +1232,7 @@
         <button type="button" id="reply-banner-cancel-btn" aria-label="Cancel reply">✕</button>
       </aside>
 
-      <form id="chat-form">
+      <form id="chat-form" hidden>
         <input type="text" id="chat-input" placeholder="Type a message..." required autocomplete="off">
         <button type="submit" id="chat-send-btn">Send</button>
       </form>
@@ -1054,6 +1258,7 @@
       </label>
 
       <menu class="modal-actions">
+        <button type="button" id="modal-signout-btn">Sign Out</button>
         <button type="button" id="modal-cancel-btn">Cancel</button>
         <button type="submit" id="modal-save-btn">Save</button>
       </menu>
@@ -1158,30 +1363,6 @@
       });
     }
 
-    async function initializeFirebaseAuth() {
-      if (!auth) return localStorage.getItem('rafiqx_user_id') || ('uid_' + Date.now());
-
-      return new Promise((resolve) => {
-        auth.onAuthStateChanged(async (user) => {
-          if (user) {
-            resolve(user.uid);
-          } else {
-            try {
-              const userCred = await auth.signInAnonymously();
-              resolve(userCred.user.uid);
-            } catch (err) {
-              console.warn("Firebase Anonymous Auth Error:", err);
-              let fallbackId = localStorage.getItem('rafiqx_user_id');
-              if (!fallbackId) {
-                fallbackId = 'uid_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
-              }
-              resolve(fallbackId);
-            }
-          }
-        });
-      });
-    }
-
     function formatHandle(raw) {
       if (!raw) return '@user';
       let clean = raw.trim().replace(/^@+/, '').replace(/[^a-zA-Z0-9_]/g, '');
@@ -1192,7 +1373,174 @@
       return handle.toLowerCase().replace(/[^a-z0-9_]/g, '');
     }
 
-    async function loadGlobalChat() {
+    function initChatAuth() {
+      const chatAuthSection = document.getElementById('chat-auth-section');
+      const authForm = document.getElementById('auth-credentials-form');
+      const authEmailInput = document.getElementById('auth-email-input');
+      const authPasswordInput = document.getElementById('auth-password-input');
+      const authStatusMsg = document.getElementById('auth-status-msg');
+      const emailSignInBtn = document.getElementById('email-signin-btn');
+      const emailSignUpBtn = document.getElementById('email-signup-btn');
+      const googleSignInBtn = document.getElementById('google-signin-btn');
+      const authDivider = document.getElementById('auth-divider');
+      const verificationActions = document.getElementById('verification-actions');
+      const resendEmailBtn = document.getElementById('resend-email-btn');
+      const checkVerificationBtn = document.getElementById('check-verification-btn');
+      const authSignOutBtn = document.getElementById('auth-signout-btn');
+      const modalSignOutBtn = document.getElementById('modal-signout-btn');
+
+      const chatProfileBar = document.getElementById('chat-profile-bar');
+      const chatList = document.getElementById('chat-list');
+      const noChatMsg = document.getElementById('no-chat-msg');
+      const chatForm = document.getElementById('chat-form');
+
+      function setAuthStatus(msg, type) {
+        authStatusMsg.textContent = msg || '';
+        authStatusMsg.className = type || '';
+      }
+
+      function showUnverifiedUI(user) {
+        chatAuthSection.hidden = false;
+        authForm.hidden = true;
+        authDivider.hidden = true;
+        googleSignInBtn.hidden = true;
+        verificationActions.hidden = false;
+
+        chatProfileBar.hidden = true;
+        chatList.hidden = true;
+        noChatMsg.hidden = true;
+        chatForm.hidden = true;
+
+        setAuthStatus("Verification email sent to " + (user.email || 'your email') + ". Please verify to access chat.", "error");
+      }
+
+      function showUnauthenticatedUI() {
+        chatAuthSection.hidden = false;
+        authForm.hidden = false;
+        authDivider.hidden = false;
+        googleSignInBtn.hidden = false;
+        verificationActions.hidden = true;
+
+        chatProfileBar.hidden = true;
+        chatList.hidden = true;
+        noChatMsg.hidden = true;
+        chatForm.hidden = true;
+
+        setAuthStatus("", "");
+      }
+
+      function showAuthenticatedUI() {
+        chatAuthSection.hidden = true;
+        chatProfileBar.hidden = false;
+        chatList.hidden = false;
+        chatForm.hidden = false;
+      }
+
+      if (!auth) {
+        setAuthStatus("Firebase auth is not configured.", "error");
+        return;
+      }
+
+      emailSignInBtn.addEventListener('click', async () => {
+        const email = authEmailInput.value.trim();
+        const password = authPasswordInput.value.trim();
+        if (!email || !password) {
+          setAuthStatus("Please enter both email and password.", "error");
+          return;
+        }
+        try {
+          const userCred = await auth.signInWithEmailAndPassword(email, password);
+          if (!userCred.user.emailVerified) {
+            showUnverifiedUI(userCred.user);
+          } else {
+            setAuthStatus("Signed in successfully!", "success");
+          }
+        } catch (err) {
+          setAuthStatus(err.message, "error");
+        }
+      });
+
+      emailSignUpBtn.addEventListener('click', async () => {
+        const email = authEmailInput.value.trim();
+        const password = authPasswordInput.value.trim();
+        if (!email || !password) {
+          setAuthStatus("Please enter both email and password.", "error");
+          return;
+        }
+        try {
+          const userCred = await auth.createUserWithEmailAndPassword(email, password);
+          await userCred.user.sendEmailVerification();
+          showUnverifiedUI(userCred.user);
+        } catch (err) {
+          setAuthStatus(err.message, "error");
+        }
+      });
+
+      googleSignInBtn.addEventListener('click', async () => {
+        try {
+          const provider = new firebase.auth.GoogleAuthProvider();
+          await auth.signInWithPopup(provider);
+        } catch (err) {
+          setAuthStatus(err.message, "error");
+        }
+      });
+
+      resendEmailBtn.addEventListener('click', async () => {
+        if (auth.currentUser) {
+          try {
+            await auth.currentUser.sendEmailVerification();
+            setAuthStatus("Verification email resent!", "success");
+          } catch (err) {
+            setAuthStatus(err.message, "error");
+          }
+        }
+      });
+
+      checkVerificationBtn.addEventListener('click', async () => {
+        if (auth.currentUser) {
+          await auth.currentUser.reload();
+          if (auth.currentUser.emailVerified) {
+            showAuthenticatedUI();
+            loadGlobalChat(auth.currentUser.uid);
+          } else {
+            setAuthStatus("Email still not verified. Please check your inbox.", "error");
+          }
+        }
+      });
+
+      const handleSignOut = async () => {
+        try {
+          await auth.signOut();
+          showUnauthenticatedUI();
+          const profileModal = document.getElementById('profile-modal');
+          if (profileModal.open) {
+            if (typeof profileModal.close === 'function') profileModal.close();
+            else profileModal.removeAttribute('open');
+          }
+        } catch (err) {
+          console.warn("Sign out error:", err);
+        }
+      };
+
+      authSignOutBtn.addEventListener('click', handleSignOut);
+      modalSignOutBtn.addEventListener('click', handleSignOut);
+
+      auth.onAuthStateChanged(async (user) => {
+        if (user) {
+          const isGoogle = user.providerData.some(p => p.providerId === 'google.com');
+          if (isGoogle || user.emailVerified) {
+            showAuthenticatedUI();
+            loadGlobalChat(user.uid);
+          } else {
+            showUnverifiedUI(user);
+          }
+        } else {
+          showUnauthenticatedUI();
+        }
+      });
+    }
+
+    async function loadGlobalChat(currentUserId) {
       const chatList = document.getElementById('chat-list');
       const emptyMsg = document.getElementById('no-chat-msg');
       const chatForm = document.getElementById('chat-form');
@@ -1219,18 +1567,28 @@
 
       let activeReply = null;
 
-      const currentUserId = await initializeFirebaseAuth();
       try { localStorage.setItem('rafiqx_user_id', currentUserId); } catch(e) {}
 
       let currentUsername = '@user';
       try {
         const stored = localStorage.getItem('rafiqx_chat_username');
-        currentUsername = stored ? formatHandle(stored) : formatHandle('@user_' + currentUserId.substring(0, 4));
+        if (stored) {
+          currentUsername = formatHandle(stored);
+        } else if (auth && auth.currentUser && auth.currentUser.displayName) {
+          currentUsername = formatHandle(auth.currentUser.displayName);
+        } else {
+          currentUsername = formatHandle('@user_' + currentUserId.substring(0, 4));
+        }
       } catch (e) {}
 
       let currentPfp = defaultPfpSvg;
       try {
-        currentPfp = localStorage.getItem('rafiqx_chat_pfp') || defaultPfpSvg;
+        const storedPfp = localStorage.getItem('rafiqx_chat_pfp');
+        if (storedPfp) {
+          currentPfp = storedPfp;
+        } else if (auth && auth.currentUser && auth.currentUser.photoURL) {
+          currentPfp = auth.currentUser.photoURL;
+        }
       } catch (e) {}
 
       let tempPfpBuffer = currentPfp;
@@ -1318,7 +1676,7 @@
       }
       updateHeaderDisplay();
 
-      openModalBtn.addEventListener('click', () => {
+      openModalBtn.onclick = () => {
         modalUsernameInput.value = currentUsername;
         modalPfpPreview.src = currentPfp;
         tempPfpBuffer = currentPfp;
@@ -1329,22 +1687,22 @@
         } else {
           profileModal.setAttribute('open', '');
         }
-      });
+      };
 
-      modalUsernameInput.addEventListener('input', (e) => {
+      modalUsernameInput.oninput = (e) => {
         const handle = formatHandle(e.target.value);
         checkUsernameAvailability(handle);
-      });
+      };
 
-      modalCancelBtn.addEventListener('click', () => {
+      modalCancelBtn.onclick = () => {
         if (typeof profileModal.close === 'function') {
           profileModal.close();
         } else {
           profileModal.removeAttribute('open');
         }
-      });
+      };
 
-      modalPfpInput.addEventListener('change', (e) => {
+      modalPfpInput.onchange = (e) => {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
 
@@ -1371,9 +1729,9 @@
         };
         reader.readAsDataURL(file);
         modalPfpInput.value = '';
-      });
+      };
 
-      profileForm.addEventListener('submit', (e) => {
+      profileForm.onsubmit = (e) => {
         if (modalSaveBtn.disabled) {
           e.preventDefault();
           return;
@@ -1394,7 +1752,7 @@
           updateHeaderDisplay();
           renderMessageList(chatStore);
         }
-      });
+      };
 
       let chatStore = [];
       try {
@@ -1422,7 +1780,7 @@
         replyBanner.hidden = true;
       }
 
-      replyCancelBtn.addEventListener('click', clearReplyState);
+      replyCancelBtn.onclick = clearReplyState;
 
       function renderMessageList(messages) {
         chatList.innerHTML = '';
@@ -1552,7 +1910,7 @@
         });
       }
 
-      chatForm.addEventListener('submit', (e) => {
+      chatForm.onsubmit = (e) => {
         e.preventDefault();
         const text = chatInput.value.trim();
         if (!text) return;
@@ -1587,7 +1945,7 @@
 
         chatInput.value = '';
         clearReplyState();
-      });
+      };
     }
 
     async function syncNotificationState() {
@@ -1628,7 +1986,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       syncNotificationState();
       loadNotificationsHistory();
-      loadGlobalChat();
+      initChatAuth();
     });
   </script>
 
