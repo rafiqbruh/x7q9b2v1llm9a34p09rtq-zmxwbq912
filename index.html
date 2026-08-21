@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>RAFIQXWORLD Interface</title>
+
+  <!-- Preloading Critical Image Assets -->
+  <link rel="preload" as="image" href="assets/RC20.png">
+  <link rel="preload" as="image" href="assets/RC24.png">
+  <link rel="preload" as="image" href="assets/ACCESSORIES.png">
+  <link rel="preload" as="image" href="assets/FACE.png">
+
+  <style>
+    /* ==========================================================================
+       1. CORE RESET & THEME VARIABLES
+       ========================================================================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+      user-select: none;
+    }
+
+    :root {
+      --bg-color: #030812;
+      --text-main: #FFFFFF;
+      --text-sub: #557599;
+      --card-bg: rgba(8, 18, 36, 0.94);
+      --card-border: #14375E;
+      --nav-bg: rgba(6, 16, 32, 0.95);
+      --accent-blue: #0088FF;
+      --wa-green: #25D366;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 100vh;
+      padding: 2.5rem 1rem 6.5rem 1rem;
+    }
+
+    /* ==========================================================================
+       2. ZERO-COST AMBIENT GLOWS
+       ========================================================================== */
+    .ambient-glow {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      transform: translateZ(0);
+    }
+
+    .glow-top-left {
+      top: -100px;
+      left: -100px;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(0, 136, 255, 0.22) 0%, rgba(0, 136, 255, 0.08) 45%, rgba(3, 8, 18, 0) 70%);
+    }
+
+    .glow-bottom-right {
+      bottom: -80px;
+      right: -80px;
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(20, 55, 94, 0.4) 0%, rgba(20, 55, 94, 0.1) 50%, rgba(3, 8, 18, 0) 70%);
+    }
+
+    /* ==========================================================================
+       3. APP CONTAINMENT WRAPPER
+       ========================================================================== */
+    .app-wrapper {
+      width: 100%;
+      max-width: 720px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+      contain: layout style;
+    }
+
+    /* ==========================================================================
+       4. HEADER & LOGO
+       ========================================================================== */
+    .header {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      margin-top: 0.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .logo-headline {
+      font-size: clamp(2.5rem, 7vw, 4.5rem);
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: var(--text-main);
+      line-height: 1.1;
+    }
+
+    .glow-x {
+      color: var(--accent-blue);
+      text-shadow: 0 0 14px rgba(0, 136, 255, 0.8);
+    }
+
+    /* ==========================================================================
+       5. VIEW PANELS & ANIMATIONS
+       ========================================================================== */
+    .view-panel {
+      display: none;
+      flex-direction: column;
+      gap: 1.5rem;
+      width: 100%;
+      min-height: 200px;
+      contain: layout style;
+    }
+
+    .view-panel.active {
+      display: flex;
+    }
+
+    @keyframes slideInLeftOnly {
+      0% {
+        transform: translate3d(-100%, 0, 0);
+      }
+      100% {
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    @keyframes swipeUpOnly {
+      0% {
+        transform: translate3d(0, 50px, 0);
+      }
+      100% {
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    .animate-in {
+      will-change: transform;
+      animation: slideInLeftOnly 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .animate-up {
+      will-change: transform;
+      animation: swipeUpOnly 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .delay-1 { animation-delay: 0s; }
+    .delay-2 { animation-delay: 0.08s; }
+    .delay-3 { animation-delay: 0.16s; }
+    .delay-4 { animation-delay: 0.24s; }
+
+    /* 3:2 Aspect Ratio Cards */
+    .box-3-2 {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      width: 100%;
+      aspect-ratio: 3 / 2;
+      border-radius: 16px;
+      border: 2px solid var(--card-border);
+      background: var(--card-bg);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+      transform: translateZ(0);
+      transition: border-color 0.2s ease, transform 0.2s ease;
+      cursor: pointer;
+    }
+
+    .box-3-2:active,
+    .box-3-2:hover {
+      border-color: var(--accent-blue);
+      transform: scale(0.99);
+    }
+
+    .box-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+    }
+
+    /* ==========================================================================
+       6. WHATSAPP CHANNEL BANNER & PULSE
+       ========================================================================== */
+    .whatsapp-card {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      width: 100%;
+      padding: 1.1rem 1.25rem;
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: 16px;
+      text-decoration: none;
+      color: var(--text-main);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+      margin-top: 0.5rem;
+      
+      opacity: 0;
+      transform: translate3d(0, 40px, 0);
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), 
+                  transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                  border-color 0.2s ease,
+                  box-shadow 0.2s ease;
+      will-change: transform, opacity;
+    }
+
+    .whatsapp-card.visible {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .whatsapp-card:hover,
+    .whatsapp-card:active {
+      border-color: var(--wa-green);
+      box-shadow: 0 0 16px rgba(37, 211, 102, 0.3);
+    }
+
+    .wa-icon-box {
+      width: 48px;
+      height: 48px;
+      aspect-ratio: 1 / 1;
+      border-radius: 12px;
+      background: rgba(37, 211, 102, 0.12);
+      border: 1px solid var(--wa-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--wa-green);
+      flex-shrink: 0;
+      animation: waGlowPulse 2.5s infinite ease-in-out;
+    }
+
+    @keyframes waGlowPulse {
+      0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(37, 211, 102, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+    }
+
+    .wa-icon-box svg {
+      width: 26px;
+      height: 26px;
+      stroke: var(--wa-green);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .wa-text {
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: var(--text-main);
+    }
+
+    /* ==========================================================================
+       7. SETTINGS VIEW
+       ========================================================================== */
+    .locked-card {
+      position: relative;
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: 16px;
+      min-height: 320px;
+      padding: 2rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+      transform: translateZ(0);
+    }
+
+    .chain-x-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .chain-line {
+      stroke: var(--card-border);
+      stroke-width: 4;
+      stroke-dasharray: 12, 8;
+      opacity: 0.65;
+    }
+
+    .chain-line-glow {
+      stroke: var(--accent-blue);
+      stroke-width: 2;
+      stroke-dasharray: 12, 8;
+      opacity: 0.45;
+    }
+
+    .locked-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 1rem;
+      background: rgba(3, 8, 18, 0.9);
+      padding: 1.75rem 2rem;
+      border-radius: 16px;
+      border: 1px solid var(--card-border);
+    }
+
+    .lock-icon-box {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(0, 136, 255, 0.1);
+      border: 1px solid var(--accent-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lock-icon-box svg {
+      width: 32px;
+      height: 32px;
+      stroke: var(--accent-blue);
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .locked-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: var(--text-main);
+    }
+
+    .locked-desc {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      letter-spacing: 0.5px;
+    }
+
+    /* ==========================================================================
+       8. ABOUT VIEW
+       ========================================================================== */
+    .changelog-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      transform: translateZ(0);
+    }
+
+    .changelog-card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .version-badge {
+      font-size: 0.85rem;
+      font-weight: 800;
+      background: rgba(0, 136, 255, 0.15);
+      color: var(--accent-blue);
+      border: 1px solid rgba(0, 136, 255, 0.4);
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      letter-spacing: 1px;
+    }
+
+    .changelog-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      padding-top: 0.25rem;
+    }
+
+    .changelog-item {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-main);
+      letter-spacing: 1px;
+    }
+
+    /* ==========================================================================
+       9. FLOATING PILL NAVIGATION
+       ========================================================================== */
+    .nav-container {
+      position: fixed;
+      bottom: 1.8rem;
+      left: 50%;
+      transform: translateX(-50%) translateZ(0);
+      display: flex;
+      align-items: center;
+      gap: 1.8rem;
+      background: var(--nav-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 50px;
+      padding: 0.8rem 2.2rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      z-index: 100;
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      color: var(--text-sub);
+      cursor: pointer;
+      padding: 0.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s ease;
+      position: relative;
+    }
+
+    .nav-btn svg {
+      width: 26px;
+      height: 26px;
+      stroke-width: 1.8;
+      stroke: currentColor;
+      fill: none;
+    }
+
+    .nav-btn.active {
+      color: var(--accent-blue);
+    }
+
+    .nav-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      width: 14px;
+      height: 3px;
+      border-radius: 2px;
+      background-color: var(--accent-blue);
+      box-shadow: 0 0 6px #0088FF;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BACKGROUND GLOWS -->
+  <div class="ambient-glow glow-top-left"></div>
+  <div class="ambient-glow glow-bottom-right"></div>
+
+  <!-- MAIN APP CONTAINER -->
+  <div class="app-wrapper">
+
+    <header class="header">
+      <h1 class="logo-headline">RAFIQ<span class="glow-x">X</span>WORLD</h1>
+    </header>
+
+    <!-- VIEW 1: HOME -->
+    <main class="view-panel active" id="view-home">
+      <a href="rc20.html" class="box-3-2 animate-in delay-1">
+        <img src="assets/RC20.png" alt="RC20" class="box-img" decoding="async" fetchpriority="high">
+      </a>
+
+      <a href="rc24.html" class="box-3-2 animate-in delay-2">
+        <img src="assets/RC24.png" alt="RC24" class="box-img" decoding="async" fetchpriority="high">
+      </a>
+
+      <a href="accessories.html" class="box-3-2 animate-in delay-3">
+        <img src="assets/ACCESSORIES.png" alt="ACCESSORIES" class="box-img" decoding="async" fetchpriority="high">
+      </a>
+
+      <!-- NEW FACE CARD -->
+      <a href="face.html" class="box-3-2 animate-in delay-4">
+        <img src="assets/FACE.png" alt="FACE" class="box-img" decoding="async" fetchpriority="high">
+      </a>
+
+      <!-- WHATSAPP BANNER -->
+      <a 
+        href="https://whatsapp.com/channel/0029Vb8B7vkKAwEtSJVgh83o" 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        class="whatsapp-card" 
+        id="waChannelBtn"
+      >
+        <div class="wa-icon-box">
+          <svg viewBox="0 0 24 24">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+          </svg>
+        </div>
+        <span class="wa-text">WhatsApp Channel</span>
+      </a>
+    </main>
+
+    <!-- VIEW 2: SETTINGS -->
+    <section class="view-panel" id="view-settings">
+      <div class="locked-card delay-1">
+        <svg class="chain-x-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="0" y1="0" x2="100" y2="100" class="chain-line" />
+          <line x1="100" y1="0" x2="0" y2="100" class="chain-line" />
+          <line x1="0" y1="0" x2="100" y2="100" class="chain-line-glow" />
+          <line x1="100" y1="0" x2="0" y2="100" class="chain-line-glow" />
+        </svg>
+
+        <div class="locked-content">
+          <div class="lock-icon-box">
+            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <h2 class="locked-title">SETTINGS LOCKED</h2>
+          <p class="locked-desc">This section is currently restricted</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: ABOUT -->
+    <section class="view-panel" id="view-about">
+      <div class="changelog-card delay-1">
+        <div class="changelog-card-title">
+          <span>Change Logs</span>
+          <span class="version-badge">1.0</span>
+        </div>
+        <ul class="changelog-list">
+          <li class="changelog-item">- RC20 JERSEY CHECKER</li>
+          <li class="changelog-item">- RC24 JERSEY CHECKER</li>
+          <li class="changelog-item">- ACCESSORIES CHECKER</li>
+          <li class="changelog-item">- FACE CHECKER</li>
+        </ul>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- FLOATING NAVIGATION BAR -->
+  <nav class="nav-container">
+    <button class="nav-btn active" data-target="view-home" aria-label="Home">
+      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+    </button>
+
+    <button class="nav-btn" data-target="view-settings" aria-label="Settings">
+      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+    </button>
+
+    <button class="nav-btn" data-target="view-about" aria-label="About">
+      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </svg>
+    </button>
+  </nav>
+
+  <!-- INTERACTIVITY & OBSERVER LOGIC -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const navButtons = document.querySelectorAll(".nav-btn");
+      const viewPanels = document.querySelectorAll(".view-panel");
+
+      // Mark initial home view as animated after page load
+      const homePanel = document.getElementById("view-home");
+      if (homePanel) {
+        homePanel.dataset.animated = "true";
+      }
+
+      // Handle tab switches with single-run animation logic
+      navButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          if (btn.classList.contains("active")) return;
+
+          const targetViewId = btn.getAttribute("data-target");
+
+          navButtons.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          viewPanels.forEach((panel) => {
+            if (panel.id === targetViewId) {
+              panel.classList.add("active");
+
+              // Trigger animation ONLY if the panel hasn't been viewed before
+              if (!panel.dataset.animated) {
+                panel.dataset.animated = "true";
+
+                const animTarget = panel.querySelector(".locked-card, .changelog-card");
+                if (animTarget) {
+                  requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                      animTarget.classList.add("animate-up");
+                    });
+                  });
+                }
+              }
+            } else {
+              panel.classList.remove("active");
+            }
+          });
+        });
+      });
+
+      // Scroll-Trigger Observer for WhatsApp Channel Button
+      const waBtn = document.getElementById("waChannelBtn");
+      if (waBtn) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("visible");
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.15 });
+
+        observer.observe(waBtn);
+      }
+    });
+  </script>
+
+<!-- Include Global Audio Manager -->
+<script src="audio-manager.js"></script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => {
+          console.log('PWA Offline Cache Active:', reg.scope);
+
+          // Check for service worker updates periodically
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('New content available! Please refresh.');
+                // Optional: Trigger a custom UI notification banner here
+              }
+            });
+          });
+        })
+        .catch(err => {
+          console.error('Service Worker registration failed:', err);
+        });
+    });
+  }
+</script>
+
+</body>
+</html>
