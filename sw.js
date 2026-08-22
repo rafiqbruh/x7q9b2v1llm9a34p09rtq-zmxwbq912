@@ -1,8 +1,11 @@
-const CACHE_NAME = '3d-viewer-local-v2';
+const CACHE_NAME = '3d-viewer-local-v1';
 
 // Complete list of local app files and 3D assets to store offline
 const ASSETS_TO_CACHE = [
   './',
+  './icon-192.png',
+  './icon-512.png',
+  './manifest.json',
   './index.html',
   './face.html',
   './accessories.html',
@@ -31,7 +34,11 @@ const ASSETS_TO_CACHE = [
   './assets/rc24.obj',
   './assets/RC24.png',
   './assets/stump.obj',
-  './assets/umpire.obj'
+  './assets/umpire.obj',
+  './assets/rc24cap.obj',
+  './assets/rc24face.obj',
+  './assets/rc24helmet.obj',
+  './assets/rc24keeper.obj'
 ];
 
 // Install Event: Fetch and cache every local asset individually

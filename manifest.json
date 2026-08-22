@@ -1,7 +1,9 @@
 {
-  "name": "RafiqXWorld",
-  "short_name": "RafiqXWorld",
-  "start_url": "/index.html",
+  "name": "RAFIQ X WORLD",
+  "short_name": "RAFIQXWORLD",
+  "id": "/x7q9b2v1llm9a34p09rtq-zmxwbq912/",
+  "start_url": "/x7q9b2v1llm9a34p09rtq-zmxwbq912/",
+  "scope": "/x7q9b2v1llm9a34p09rtq-zmxwbq912/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",

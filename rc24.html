@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>RC24 3D Viewer</title>
 
-  <!-- Local Offline Three.js Engine & Loaders -->
+    <!-- Local Offline Three.js Engine & Loaders -->
   <script src="js/three.min.js"></script>
   <script src="js/OrbitControls.js"></script>
   <script src="js/OBJLoader.js"></script>
 
   <style>
-    /* Reset & Base Layout */
+    /* Reset & UI Base */
     * {
       margin: 0;
       padding: 0;
@@ -61,7 +61,7 @@
       pointer-events: auto;
     }
 
-    /* Keyframe Animations */
+    /* Animation Keyframes */
     @keyframes slideInLeft {
       from { 
         transform: translate3d(-100px, 0, 0); 
@@ -83,7 +83,7 @@
       to { transform: translate3d(0, 0, 0); opacity: 1; }
     }
 
-    /* Top Controls */
+    /* Top Action Controls */
     .top-left-btn {
       position: absolute;
       top: 1.25rem;
@@ -209,7 +209,7 @@
       display: none;
     }
 
-    /* Animated Buttons Inside Menu */
+    /* Slide-in Menu Buttons */
     .menu-btn {
       width: 100%;
       padding: 0.75rem;
@@ -251,13 +251,13 @@
 </head>
 <body>
 
-  <!-- WebGL 3D Canvas -->
+  <!-- WebGL Canvas Container -->
   <div id="webgl-container"></div>
 
   <!-- UI Overlay -->
   <div class="ui-layer">
 
-    <!-- Top Left: 1:1 Small Square Button -->
+    <!-- Top Left Action Button -->
     <a href="index.html" class="top-left-btn" aria-label="Go Back">
       <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
         <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -265,13 +265,13 @@
       </svg>
     </a>
 
-    <!-- Top Right: Auto Rotate Button -->
+    <!-- Top Right Auto Rotate Button -->
     <button class="auto-rotate-btn" id="autoRotateBtn">Auto Rotate Off</button>
 
-    <!-- Bottom Left Menu Square Box -->
+    <!-- Bottom Left Menu Box -->
     <div class="menu-box" id="menuBox">
       <div class="menu-header">
-        <span class="menu-title">MODEL MENU</span>
+        <span class="menu-title">RC24 MENU</span>
         <button class="eye-btn" id="eyeToggleBtn" aria-label="Toggle Menu">
           <svg id="eyeIcon" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -281,6 +281,7 @@
       </div>
 
       <div class="menu-body" id="menuBody">
+        <!-- 1. Local Image Upload -->
         <button class="menu-btn menu-btn-upload" id="uploadBtn">
           <span>UPLOAD PNG</span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -290,18 +291,25 @@
           </svg>
         </button>
         <input type="file" id="file-input" accept="image/png, image/jpeg">
+
+        <!-- 2. Model Selection Buttons -->
+        <button class="menu-btn active" data-model="rc24.obj">BATSMAN_1</button>
+        <button class="menu-btn" data-model="rc24cap.obj">RC24 CAP</button>
+        <button class="menu-btn" data-model="rc24helmet.obj">RC24 HELMET</button>
+        <button class="menu-btn" data-model="rc24keeper.obj">RC24 KEEPER</button>
       </div>
     </div>
 
   </div>
 
-  <!-- Application Logic -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       let scene, camera, renderer, controls;
       let currentModel = null;
       let loadedTexture = null;
       let isAutoRotating = false;
+
+      const modelCache = new Map();
 
       const container = document.getElementById("webgl-container");
       const autoRotateBtn = document.getElementById("autoRotateBtn");
@@ -311,13 +319,13 @@
       const eyeIcon = document.getElementById("eyeIcon");
       const uploadBtn = document.getElementById("uploadBtn");
       const fileInput = document.getElementById("file-input");
+      const modelBtns = document.querySelectorAll("[data-model]");
 
-      // Initialize 3D Engine
       function initThree() {
         scene = new THREE.Scene();
 
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 1.2, 3.5);
+        camera.position.set(0, 0, 3.4);
 
         renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -325,7 +333,6 @@
         renderer.outputEncoding = THREE.sRGBEncoding;
         container.appendChild(renderer.domElement);
 
-        // Pinch to zoom, drag to rotate/roll controls
         controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
@@ -333,8 +340,8 @@
         controls.minDistance = 0.8;
         controls.target.set(0, 0, 0);
 
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+        // Lighting System
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.95);
         scene.add(ambientLight);
 
         const mainDirLight = new THREE.DirectionalLight(0xffffff, 1.0);
@@ -345,10 +352,8 @@
         fillLight.position.set(-5, -5, -5);
         scene.add(fillLight);
 
-        // Load default model
         loadOBJModel("rc24.obj");
 
-        // Trigger menu button entrance animation
         setTimeout(triggerMenuAnimations, 200);
 
         function animate() {
@@ -364,51 +369,76 @@
         animate();
       }
 
-      // Smooth Left Slide-In Animations for Menu Buttons
       function triggerMenuAnimations() {
         const allBtns = menuBody.querySelectorAll(".menu-btn");
         allBtns.forEach((btn, index) => {
           btn.classList.remove("slide-active");
           btn.style.animationDelay = `${index * 0.08}s`;
-          void btn.offsetWidth; // Force layout reflow
+          void btn.offsetWidth;
           btn.classList.add("slide-active");
         });
       }
 
-      // OBJ Model Loader
       function loadOBJModel(fileName) {
+        if (modelCache.has(fileName)) {
+          displayModel(modelCache.get(fileName).clone(), fileName);
+          return;
+        }
+
         const loader = new THREE.OBJLoader();
         loader.load(
           `assets/${fileName}`,
           (obj) => {
-            if (currentModel) scene.remove(currentModel);
-
-            currentModel = obj;
-
-            // Auto-center and normalize scale
-            const box = new THREE.Box3().setFromObject(obj);
-            const center = box.getCenter(new THREE.Vector3());
-            const size = box.getSize(new THREE.Vector3());
-
-            obj.position.x -= center.x;
-            obj.position.y -= center.y;
-            obj.position.z -= center.z;
-
-            const maxDim = Math.max(size.x, size.y, size.z);
-            if (maxDim > 0) {
-              const scale = 2.0 / maxDim;
-              obj.scale.set(scale, scale, scale);
-            }
-
-            applyMaterialToModel(currentModel);
-            scene.add(currentModel);
+            modelCache.set(fileName, obj);
+            displayModel(obj.clone(), fileName);
           },
           undefined,
-          (err) => console.warn(`Could not load assets/${fileName}:`, err)
+          (err) => console.warn(`Error loading assets/${fileName}:`, err)
         );
       }
 
-      // Apply Texture or Default Shader
+      function displayModel(obj, fileName) {
+        if (currentModel) scene.remove(currentModel);
+
+        currentModel = obj;
+        obj.rotation.set(0, 0, 0);
+        obj.position.set(0, 0, 0);
+
+        // Center all child mesh geometries to eliminate offset pivots
+        obj.traverse((child) => {
+          if (child.isMesh && child.geometry) {
+            child.geometry.computeBoundingBox();
+            child.geometry.center();
+          }
+        });
+
+        // Compute actual model dimensions
+        let box = new THREE.Box3().setFromObject(obj);
+        let size = box.getSize(new THREE.Vector3());
+
+        // Scale model down to standard viewport target (1.2 units max)
+        const maxDim = Math.max(size.x, size.y, size.z);
+        if (maxDim > 0) {
+          const targetScale = 1.2 / maxDim;
+          obj.scale.set(targetScale, targetScale, targetScale);
+        }
+
+        // Recalculate box post-scale and force pivot point to middle center (0,0,0)
+        box = new THREE.Box3().setFromObject(obj);
+        let center = box.getCenter(new THREE.Vector3());
+        
+        obj.position.x = -center.x;
+        obj.position.y = -center.y;
+        obj.position.z = -center.z;
+
+        // Reset orbit control focus
+        controls.target.set(0, 0, 0);
+        controls.update();
+
+        applyMaterialToModel(currentModel);
+        scene.add(currentModel);
+      }
+
       function applyMaterialToModel(model) {
         if (!model) return;
 
@@ -433,14 +463,12 @@
         });
       }
 
-      // Auto Rotate Button Listener
       autoRotateBtn.addEventListener("click", () => {
         isAutoRotating = !isAutoRotating;
         autoRotateBtn.textContent = isAutoRotating ? "Auto Rotate On" : "Auto Rotate Off";
         autoRotateBtn.classList.toggle("active", isAutoRotating);
       });
 
-      // Eye Icon Hide/Unhide Menu Bar Listener
       eyeToggleBtn.addEventListener("click", () => {
         const isCollapsed = menuBox.classList.toggle("collapsed");
         if (isCollapsed) {
@@ -451,7 +479,16 @@
         }
       });
 
-      // Local File Upload Listener
+      modelBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          modelBtns.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          const modelName = btn.getAttribute("data-model");
+          loadOBJModel(modelName);
+        });
+      });
+
       uploadBtn.addEventListener("click", () => fileInput.click());
 
       fileInput.addEventListener("change", (e) => {
@@ -464,7 +501,7 @@
               tex.encoding = THREE.sRGBEncoding;
               tex.wrapS = THREE.RepeatWrapping;
               tex.wrapT = THREE.RepeatWrapping;
-              tex.flipY = true; // Corrects vertical orientation for OBJ UV maps
+              tex.flipY = true;
               tex.needsUpdate = true;
 
               loadedTexture = tex;
@@ -475,7 +512,6 @@
         }
       });
 
-      // Responsive Window Resize Handler
       window.addEventListener("resize", () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
@@ -485,11 +521,11 @@
       initThree();
     });
   </script>
-
-<!-- Include Global Audio Manager -->
+  
+  <!-- Include Global Audio Manager -->
 <script src="audio-manager.js"></script>
-
-<script>
+  
+  <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js')

@@ -5,13 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Face 3D Viewer</title>
 
-    <!-- Local Offline Three.js Engine & Loaders -->
+  <!-- Local Offline Engine Loaders -->
   <script src="js/three.min.js"></script>
   <script src="js/OrbitControls.js"></script>
   <script src="js/OBJLoader.js"></script>
 
   <style>
-    /* Reset & Base Layout */
     * {
       margin: 0;
       padding: 0;
@@ -61,16 +60,9 @@
       pointer-events: auto;
     }
 
-    /* Entrance Keyframe Animations */
     @keyframes slideInLeft {
-      from { 
-        transform: translate3d(-100px, 0, 0); 
-        opacity: 0; 
-      }
-      to { 
-        transform: translate3d(0, 0, 0); 
-        opacity: 1; 
-      }
+      from { transform: translate3d(-100px, 0, 0); opacity: 0; }
+      to { transform: translate3d(0, 0, 0); opacity: 1; }
     }
 
     @keyframes swipeDown {
@@ -83,7 +75,6 @@
       to { transform: translate3d(0, 0, 0); opacity: 1; }
     }
 
-    /* Top Left 1:1 Square Button */
     .top-left-btn {
       position: absolute;
       top: 1.25rem;
@@ -117,7 +108,6 @@
       stroke-width: 2;
     }
 
-    /* Top Right Auto Rotate Button */
     .auto-rotate-btn {
       position: absolute;
       top: 1.25rem;
@@ -141,12 +131,12 @@
       box-shadow: 0 0 14px var(--accent-glow);
     }
 
-    /* Bottom Left Menu Panel */
     .menu-box {
       position: absolute;
       bottom: 1.25rem;
       left: 1.25rem;
       width: clamp(260px, 80vw, 320px);
+      max-height: 80vh;
       background: var(--card-bg);
       border: 2px solid var(--card-border);
       border-radius: 16px;
@@ -210,7 +200,6 @@
       display: none;
     }
 
-    /* Staggered Button Slide Animations */
     .menu-btn {
       width: 100%;
       padding: 0.75rem;
@@ -252,13 +241,20 @@
 </head>
 <body>
 
-  <!-- 3D Canvas Container -->
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('PWA Offline Cache Active'))
+          .catch(err => console.error('Service Worker registration failed:', err));
+      });
+    }
+  </script>
+
   <div id="webgl-container"></div>
 
-  <!-- Interactive UI Overlay -->
   <div class="ui-layer">
-
-    <!-- Top Left: 1:1 Small Square Navigation Button -->
     <a href="index.html" class="top-left-btn" aria-label="Go Back">
       <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
         <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -266,10 +262,8 @@
       </svg>
     </a>
 
-    <!-- Top Right: Auto Rotate Toggle Button -->
     <button class="auto-rotate-btn" id="autoRotateBtn">Auto Rotate Off</button>
 
-    <!-- Bottom Left: Main Menu Box -->
     <div class="menu-box" id="menuBox">
       <div class="menu-header">
         <span class="menu-title">FACE MENU</span>
@@ -291,18 +285,23 @@
           </svg>
         </button>
         <input type="file" id="file-input" accept="image/png, image/jpeg">
+
+        <!-- Face Selection Buttons -->
+        <button class="menu-btn active" data-model="face.obj">RC20 FACE</button>
+        <button class="menu-btn" data-model="rc24face.obj">RC24 FACE</button>
       </div>
     </div>
-
   </div>
 
-  <!-- Application Logic -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       let scene, camera, renderer, controls;
       let currentModel = null;
-      let loadedTexture = null;
+      let activeFileName = "face.obj"; 
       let isAutoRotating = false;
+
+      const individualTextures = new Map();
+      const modelCache = new Map();
 
       const container = document.getElementById("webgl-container");
       const autoRotateBtn = document.getElementById("autoRotateBtn");
@@ -312,12 +311,10 @@
       const eyeIcon = document.getElementById("eyeIcon");
       const uploadBtn = document.getElementById("uploadBtn");
       const fileInput = document.getElementById("file-input");
+      const modelBtns = document.querySelectorAll("[data-model]");
 
-      // Initialize 3D Engine
       function initThree() {
         scene = new THREE.Scene();
-
-        // Extended camera frustum planes to handle models of varying scales
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.001, 10000);
 
         renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
@@ -326,12 +323,10 @@
         renderer.outputEncoding = THREE.sRGBEncoding;
         container.appendChild(renderer.domElement);
 
-        // Touch & Gesture Controls (Pinch zoom, rotate, roll)
         controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
 
-        // Scene Lighting
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
         scene.add(ambientLight);
 
@@ -343,10 +338,7 @@
         fillLight.position.set(-5, -5, -5);
         scene.add(fillLight);
 
-        // Load Default Face Model
         loadOBJModel("face.obj");
-
-        // Trigger staggered menu button entrance animation
         setTimeout(triggerMenuAnimations, 200);
 
         function animate() {
@@ -362,85 +354,105 @@
         animate();
       }
 
-      // Sequential Entrance Animations for Menu Buttons
       function triggerMenuAnimations() {
         const allBtns = menuBody.querySelectorAll(".menu-btn");
         allBtns.forEach((btn, index) => {
           btn.classList.remove("slide-active");
           btn.style.animationDelay = `${index * 0.08}s`;
-          void btn.offsetWidth; // Force CSS reflow
+          void btn.offsetWidth;
           btn.classList.add("slide-active");
         });
       }
 
-      // OBJ Model Loader
       function loadOBJModel(fileName) {
+        activeFileName = fileName;
+
+        if (modelCache.has(fileName)) {
+          displayModel(modelCache.get(fileName).clone());
+          return;
+        }
+
         const loader = new THREE.OBJLoader();
         loader.load(
           `assets/${fileName}`,
           (obj) => {
-            if (currentModel) scene.remove(currentModel);
-
-            currentModel = obj;
-
-            // Recompute bounding boxes and geometry positions
-            obj.traverse((child) => {
-              if (child.isMesh) {
-                child.geometry.computeBoundingBox();
-                child.geometry.computeBoundingSphere();
-              }
-            });
-
-            const box = new THREE.Box3().setFromObject(obj);
-            const center = box.getCenter(new THREE.Vector3());
-
-            // Center object position precisely at origin (0,0,0)
-            obj.position.x = -center.x;
-            obj.position.y = -center.y;
-            obj.position.z = -center.z;
-
-            applyMaterialToModel(currentModel);
-            scene.add(currentModel);
-
-            // Auto-fit camera to model dimensions
-            fitCameraToObject(box);
+            modelCache.set(fileName, obj);
+            displayModel(obj.clone());
           },
           undefined,
           (err) => console.warn(`Could not load assets/${fileName}:`, err)
         );
       }
 
-      // Dynamic Camera Auto-Framing Logic
-      function fitCameraToObject(box) {
+      function displayModel(obj) {
+        if (currentModel) scene.remove(currentModel);
+
+        currentModel = obj;
+
+        obj.traverse((child) => {
+          if (child.isMesh) {
+            child.geometry.computeBoundingBox();
+            child.geometry.computeBoundingSphere();
+          }
+        });
+
+        const box = new THREE.Box3().setFromObject(obj);
+        const center = box.getCenter(new THREE.Vector3());
+
+        obj.position.x = -center.x;
+        obj.position.y = -center.y;
+        obj.position.z = -center.z;
+
+        const textureToApply = individualTextures.get(activeFileName) || null;
+        applyMaterialToModel(currentModel, textureToApply);
+        
+        scene.add(currentModel);
+        
+        // Pass the filename into fitCameraToObject to apply custom framing logic
+        fitCameraToObject(box, activeFileName);
+      }
+
+      function fitCameraToObject(box, fileName) {
         const size = box.getSize(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z);
+        let maxDim;
+
+        // Custom camera framing for face.obj to zoom right onto the head
+        if (fileName === "face.obj") {
+          maxDim = size.y; // Measure height instead of wide arm width
+        } else {
+          maxDim = Math.max(size.x, size.y, size.z);
+        }
+
         const radius = maxDim > 0 ? maxDim / 2 : 1;
-
         const fovRad = (camera.fov * Math.PI) / 180;
-        let cameraDistance = Math.abs(radius / Math.sin(fovRad / 2)) * 1.4;
+        let cameraDistance = Math.abs(radius / Math.sin(fovRad / 2)) * 1.35;
 
-        camera.position.set(0, cameraDistance * 0.3, cameraDistance);
+        if (fileName === "face.obj") {
+          // Point camera directly at head level
+          camera.position.set(0, size.y * 0.05, cameraDistance);
+          controls.target.set(0, size.y * 0.05, 0);
+        } else {
+          camera.position.set(0, cameraDistance * 0.3, cameraDistance);
+          controls.target.set(0, 0, 0);
+        }
 
-        // Adjust near and far clipping bounds relative to camera distance
         camera.near = cameraDistance / 1000;
         camera.far = cameraDistance * 1000;
         camera.updateProjectionMatrix();
 
-        controls.target.set(0, 0, 0);
         controls.minDistance = cameraDistance * 0.05;
         controls.maxDistance = cameraDistance * 20;
         controls.update();
       }
 
-      // Apply Shader Material or Custom Imported Texture
-      function applyMaterialToModel(model) {
+      function applyMaterialToModel(model, texture) {
         if (!model) return;
 
         model.traverse((child) => {
           if (child.isMesh) {
-            if (loadedTexture) {
+            if (texture) {
               child.material = new THREE.MeshStandardMaterial({
-                map: loadedTexture,
+                map: texture,
                 roughness: 0.4,
                 metalness: 0.1,
                 side: THREE.DoubleSide
@@ -457,14 +469,12 @@
         });
       }
 
-      // Auto Rotate Button Listener
       autoRotateBtn.addEventListener("click", () => {
         isAutoRotating = !isAutoRotating;
         autoRotateBtn.textContent = isAutoRotating ? "Auto Rotate On" : "Auto Rotate Off";
         autoRotateBtn.classList.toggle("active", isAutoRotating);
       });
 
-      // Eye Icon Hide/Unhide Menu Listener
       eyeToggleBtn.addEventListener("click", () => {
         const isCollapsed = menuBox.classList.toggle("collapsed");
         if (isCollapsed) {
@@ -475,7 +485,14 @@
         }
       });
 
-      // Local File Upload Listener
+      modelBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          modelBtns.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          loadOBJModel(btn.getAttribute("data-model"));
+        });
+      });
+
       uploadBtn.addEventListener("click", () => fileInput.click());
 
       fileInput.addEventListener("change", (e) => {
@@ -491,15 +508,14 @@
               tex.flipY = true;
               tex.needsUpdate = true;
 
-              loadedTexture = tex;
-              applyMaterialToModel(currentModel);
+              individualTextures.set(activeFileName, tex);
+              applyMaterialToModel(currentModel, tex);
             });
           };
           reader.readAsDataURL(file);
         }
       });
 
-      // Responsive Resize Handler
       window.addEventListener("resize", () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
@@ -509,11 +525,11 @@
       initThree();
     });
   </script>
-
-<!-- Include Global Audio Manager -->
+  
+  <!-- Include Global Audio Manager -->
 <script src="audio-manager.js"></script>
-
-<script>
+  
+  <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js')
